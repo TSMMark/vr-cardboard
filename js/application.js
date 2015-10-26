@@ -66,6 +66,13 @@ var init = function () {
   var light = new THREE.HemisphereLight(0x777777, 0x000000, 0.6);
   scene.add(light);
 
+  for(var i = 0; i < 5; i++) {
+    var directionalLight = new THREE.DirectionalLight(Math.random() * 0xFFFFFF, Math.random() * 0.5);
+    directionalLight.position.set(Math.random() * 500 + 500, Math.random() * 500 + 500, Math.random() * 500 + 500);
+    directionalLight.rotation.set(Math.PI * Math.random() * 2, Math.PI * Math.random() * 2, Math.PI * Math.random() * 2);
+    scene.add(directionalLight);
+  }
+
   var texture = THREE.ImageUtils.loadTexture(
     'textures/patterns/checker.png'
   );
