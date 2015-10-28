@@ -3,6 +3,10 @@ var effect, controls;
 var element, container;
 var unitHeight = 10;
 var movementSpeed = 20;
+var mapSideLength = 1000;
+
+var sphereX;
+var sphereZ;
 
 var pressedKeys = [];
 var KEYCODES = {
@@ -63,14 +67,37 @@ var init = function () {
 
   window.addEventListener('deviceorientation', setOrientationControls, true);
 
-  var light = new THREE.HemisphereLight(0x777777, 0x000000, 0.6);
+  var light = new THREE.HemisphereLight(Math.random() * 0x7777777, 0x000000, 0.6);
   scene.add(light);
 
-  for(var i = 0; i < 5; i++) {
-    var directionalLight = new THREE.DirectionalLight(Math.random() * 0xFFFFFF, Math.random() * 0.5);
-    directionalLight.position.set(Math.random() * 500 + 500, Math.random() * 500 + 500, Math.random() * 500 + 500);
-    directionalLight.rotation.set(Math.PI * Math.random() * 2, Math.PI * Math.random() * 2, Math.PI * Math.random() * 2);
-    scene.add(directionalLight);
+  // Sunlight
+  // var directionalLight = new THREE.DirectionalLight(Math.random() * 0xFFFFFF, Math.random() * 0.5);
+  // directionalLight.position.set(Math.random() * 500 + 500, Math.random() * 500 + 500, Math.random() * 500 + 500);
+  // directionalLight.rotation.set(Math.PI * Math.random() * 2, Math.PI * Math.random() * 2, Math.PI * Math.random() * 2);
+  // scene.add(directionalLight);
+
+  // for(var i = 0; i < 9; i++) {
+  //   var pointLight = new THREE.PointLight(Math.random() * 0xFFFFFF, Math.random() * 0.5, Math.random() * mapSideLength, Math.random() * mapSideLength);
+  //   pointLight.position.set(Math.random() * 500 + 500, Math.random() * 500 + 500, Math.random() * 500 + 500);
+  //   // pointLight.rotation.set(Math.PI * Math.random() * 2, Math.PI * Math.random() * 2, Math.PI * Math.random() * 2);
+  //   scene.add(pointLight);
+  // }
+
+  for(var i = 0; i < 3; i++) {
+    var spotLight = new THREE.SpotLight(Math.random() * 0xFFFFFF, Math.random() * 0.5, Math.random() * mapSideLength, Math.random() * Math.PI / 2);
+    spotLight.position.set(Math.random() * 500 + 500, Math.random() * 500 + 500, Math.random() * 500 + 500);
+
+    spotLight.castShadow = true;
+
+    spotLight.shadowMapWidth = 1024;
+    spotLight.shadowMapHeight = 1024;
+
+    spotLight.shadowCameraNear = 500;
+    spotLight.shadowCameraFar = 4000;
+    spotLight.shadowCameraFov = 30;
+
+    // spotLight.rotation.set(Math.PI * Math.random() * 2, Math.PI * Math.random() * 2, Math.PI * Math.random() * 2);
+    scene.add(spotLight);
   }
 
   var texture = THREE.ImageUtils.loadTexture(
@@ -91,7 +118,7 @@ var init = function () {
 
   // ground
 
-  var plane = new THREE.PlaneGeometry(1000, 1000);
+  var plane = new THREE.PlaneGeometry(mapSideLength, mapSideLength);
   var mesh = new THREE.Mesh(plane, material);
   mesh.rotation.x = -Math.PI / 2;
   scene.add(mesh);
@@ -107,14 +134,28 @@ var init = function () {
   });
 
   for (var i = 0; i < 500; i++) {
-    var pyremidMesh = new THREE.Mesh(pyramid, flatMaterial);
-    pyremidMesh.position.x = (Math.random() - 0.5) * 1000;
-    pyremidMesh.position.y = (Math.random() - 0.5) * 1000;
-    pyremidMesh.position.z = (Math.random() - 0.5) * 1000;
-    pyremidMesh.updateMatrix();
-    pyremidMesh.matrixAutoUpdate = false;
-    scene.add(pyremidMesh);
+    var pyramidMesh = new THREE.Mesh(pyramid, flatMaterial);
+    pyramidMesh.position.x = (Math.random() - 0.5) * mapSideLength;
+    pyramidMesh.position.y = (Math.random() - 0.5) * mapSideLength;
+    pyramidMesh.position.z = (Math.random() - 0.5) * mapSideLength;
+    pyramidMesh.updateMatrix();
+    pyramidMesh.matrixAutoUpdate = false;
+    scene.add(pyramidMesh);
   }
+
+  sphereX = new THREE.Mesh(
+    new THREE.SphereGeometry(5, 32, 32),
+    new THREE.MeshBasicMaterial({ color: 0xFF0000 })
+  );
+  sphereX.position.y = 5;
+  scene.add(sphereX);
+
+  sphereZ = new THREE.Mesh(
+    new THREE.SphereGeometry(5, 32, 32),
+    new THREE.MeshBasicMaterial({ color: 0x00FF00 })
+  );
+  sphereZ.position.y = 5;
+  scene.add(sphereZ);
 
   window.addEventListener('resize', resize, false);
   setTimeout(resize, 1);
@@ -132,28 +173,43 @@ var resize = function () {
 }
 
 var handleMovement = function (dt) {
+  sphereX.position.x += dt;
+  sphereZ.position.z += dt;
+
   var xRad = camera.rotation.x;
-  // var yRad = camera.rotation.y;
-  console.log("camera rotation", xRad);
+  var yRad = camera.rotation.y;
+  // console.log("camera rotation x", xRad, "cos", Math.cos(xRad), "sin", Math.sin(xRad));
+  console.log("camera rotation y", yRad, "cos", Math.cos(yRad), "sin", Math.sin(yRad));
 
   var d = movementSpeed * dt;
 
   // TODO: These are wrong.
   if (pressedKeys[KEYCODES.up]) {
-    camera.position.x += (Math.cos(xRad) * d) - (d * 2);
-    controls.target.x += (Math.cos(xRad) * d) - (d * 2);
+    camera.position.x -= (Math.sin(yRad) * d) // - (d * 2);
+    controls.target.x -= (Math.sin(yRad) * d) // - (d * 2);
+    camera.position.z -= (Math.cos(yRad) * d) // - (d * 2);
+    controls.target.z -= (Math.cos(yRad) * d) // - (d * 2);
   }
+
   if (pressedKeys[KEYCODES.down]) {
-    camera.position.x -= (Math.cos(xRad) * d) - (d * 2);
-    controls.target.x -= (Math.cos(xRad) * d) - (d * 2);
+    camera.position.x += (Math.sin(yRad) * d) // - (d * 2);
+    controls.target.x += (Math.sin(yRad) * d) // - (d * 2);
+    camera.position.z += (Math.cos(yRad) * d) // - (d * 2);
+    controls.target.z += (Math.cos(yRad) * d) // - (d * 2);
   }
+
   if (pressedKeys[KEYCODES.left]) {
-    camera.position.z += (Math.sin(xRad) * d) - (d * 2);
-    controls.target.z += (Math.sin(xRad) * d) - (d * 2);
+    camera.position.z += (Math.sin(yRad) * d) // - (d * 2);
+    controls.target.z += (Math.sin(yRad) * d) // - (d * 2);
+    camera.position.x += (Math.cos(yRad) * d) // - (d * 2);
+    controls.target.x += (Math.cos(yRad) * d) // - (d * 2);
   }
+
   if (pressedKeys[KEYCODES.right]) {
-    camera.position.z -= (Math.sin(xRad) * d) - (d * 2);
-    controls.target.z -= (Math.sin(xRad) * d) - (d * 2);
+    camera.position.z -= (Math.sin(yRad) * d) // - (d * 2);
+    controls.target.z -= (Math.sin(yRad) * d) // - (d * 2);
+    camera.position.x -= (Math.cos(yRad) * d) // - (d * 2);
+    controls.target.x -= (Math.cos(yRad) * d) // - (d * 2);
   }
   // console.log("dt", dt);
 }
