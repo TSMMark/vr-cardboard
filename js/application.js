@@ -17,6 +17,7 @@ var KEYCODES = {
 };
 
 var clock = new THREE.Clock();
+var velocity = new THREE.Vector3();
 
 var init = function () {
   renderer = new THREE.WebGLRenderer();
@@ -176,40 +177,45 @@ var handleMovement = function (dt) {
   sphereX.position.x += dt;
   sphereZ.position.z += dt;
 
-  var xRad = camera.rotation.x;
-  var yRad = camera.rotation.y;
+  var rotationZ = camera.rotation.z;
   // console.log("camera rotation x", xRad, "cos", Math.cos(xRad), "sin", Math.sin(xRad));
-  console.log("camera rotation y", yRad, "cos", Math.cos(yRad), "sin", Math.sin(yRad));
+  // console.log("Y:", yRad, "X:", xRad, "Z:", rotationZ);
+  // console.log("cos", Math.cos(rotationZ), "sin", Math.sin(rotationZ));
+
+  var amountX = Math.sin(rotationZ);
+  var amountZ = Math.cos(rotationZ);
+
+  console.log("rotationZ:", rotationZ, "amountX:", amountX, "amountZ:", amountZ);
 
   var d = movementSpeed * dt;
 
   // TODO: These are wrong.
   if (pressedKeys[KEYCODES.up]) {
-    camera.position.x -= (Math.sin(yRad) * d) // - (d * 2);
-    controls.target.x -= (Math.sin(yRad) * d) // - (d * 2);
-    camera.position.z -= (Math.cos(yRad) * d) // - (d * 2);
-    controls.target.z -= (Math.cos(yRad) * d) // - (d * 2);
+    camera.position.x -= amountX * d // - (d * 2);
+    controls.target.x -= amountX * d // - (d * 2);
+    camera.position.z -= amountZ * d // - (d * 2);
+    controls.target.z -= amountZ * d // - (d * 2);
   }
 
   if (pressedKeys[KEYCODES.down]) {
-    camera.position.x += (Math.sin(yRad) * d) // - (d * 2);
-    controls.target.x += (Math.sin(yRad) * d) // - (d * 2);
-    camera.position.z += (Math.cos(yRad) * d) // - (d * 2);
-    controls.target.z += (Math.cos(yRad) * d) // - (d * 2);
+    camera.position.x += (Math.sin(rotationZ) * d) // - (d * 2);
+    controls.target.x += (Math.sin(rotationZ) * d) // - (d * 2);
+    camera.position.z += (Math.cos(rotationZ) * d) // - (d * 2);
+    controls.target.z += (Math.cos(rotationZ) * d) // - (d * 2);
   }
 
   if (pressedKeys[KEYCODES.left]) {
-    camera.position.z += (Math.sin(yRad) * d) // - (d * 2);
-    controls.target.z += (Math.sin(yRad) * d) // - (d * 2);
-    camera.position.x += (Math.cos(yRad) * d) // - (d * 2);
-    controls.target.x += (Math.cos(yRad) * d) // - (d * 2);
+    camera.position.z += (Math.sin(rotationZ) * d) // - (d * 2);
+    controls.target.z += (Math.sin(rotationZ) * d) // - (d * 2);
+    camera.position.x += (Math.cos(rotationZ) * d) // - (d * 2);
+    controls.target.x += (Math.cos(rotationZ) * d) // - (d * 2);
   }
 
   if (pressedKeys[KEYCODES.right]) {
-    camera.position.z -= (Math.sin(yRad) * d) // - (d * 2);
-    controls.target.z -= (Math.sin(yRad) * d) // - (d * 2);
-    camera.position.x -= (Math.cos(yRad) * d) // - (d * 2);
-    controls.target.x -= (Math.cos(yRad) * d) // - (d * 2);
+    camera.position.z -= (Math.sin(rotationZ) * d) // - (d * 2);
+    controls.target.z -= (Math.sin(rotationZ) * d) // - (d * 2);
+    camera.position.x -= (Math.cos(rotationZ) * d) // - (d * 2);
+    controls.target.x -= (Math.cos(rotationZ) * d) // - (d * 2);
   }
   // console.log("dt", dt);
 }
