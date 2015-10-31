@@ -55,13 +55,13 @@ var init = function () {
   controls.movementSpeed = movementSpeed;
   controls.rollSpeed = movementSpeed;
   // controls.domElement = container;
-  setTimeout(function () {
-    controls.moveState.forward = 1;
-    controls.updateMovementVector();
-  }, 1000);
+  // setTimeout(function () {
+  //   controls.moveState.forward = 1;
+  //   controls.updateMovementVector();
+  // }, 1000);
 
   controls.rollSpeed = Math.PI / 24;
-  controls.autoForward = true;
+  // controls.autoForward = true;
   controls.dragToLook = false;
 
   var setOrientationControls = function (e) {
@@ -70,6 +70,8 @@ var init = function () {
     }
 
     controls = new THREE.DeviceOrientationControls(camera, true);
+    controls.autoForward = true;
+    controls.movementSpeed = movementSpeed;
     controls.connect();
     controls.update();
 
