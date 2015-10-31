@@ -41,15 +41,23 @@ var init = function () {
     pressedKeys[event.keyCode] = false;
   }, false);
 
-  controls = new THREE.OrbitControls(camera, element);
-  controls.rotateUp(Math.PI / 4);
-  controls.target.set(
-    camera.position.x + 0.1,
-    camera.position.y,
-    camera.position.z
-  );
-  controls.noZoom = true;
-  controls.noPan = true;
+  // controls = new THREE.OrbitControls(camera, element);
+  // controls.rotateUp(Math.PI / 4);
+  // controls.target.set(
+  //   camera.position.x + 0.1,
+  //   camera.position.y,
+  //   camera.position.z
+  // );
+  // controls.noZoom = true;
+  // controls.noPan = true;
+
+  controls = new THREE.FlyControls(camera, element);
+  controls.movementSpeed = movementSpeed;
+  controls.rollSpeed = movementSpeed;
+  // controls.domElement = container;
+  controls.rollSpeed = Math.PI / 24;
+  controls.autoForward = true;
+  controls.dragToLook = false;
 
   var setOrientationControls = function (e) {
     if (!e.alpha) {
@@ -69,6 +77,15 @@ var init = function () {
 
   var light = new THREE.HemisphereLight(Math.random() * 0x7777777, 0x000000, 0.6);
   scene.add(light);
+
+  var groundLight = new THREE.DirectionalLight(Math.random() * 0xFFFFFF, Math.random() * 0.9);
+  groundLight.position.set(0, 1, 0);
+  groundLight.rotation.set(Math.PI * Math.random() * 2, Math.PI * Math.random() * 2, Math.PI * Math.random() * 2);
+  scene.add(groundLight);
+
+  var ambientColor = Math.random() * 0x777777;
+  var ambientLight = new THREE.AmbientLight(ambientColor);
+  scene.add(ambientLight);
 
   // Sunlight
   // var directionalLight = new THREE.DirectionalLight(Math.random() * 0xFFFFFF, Math.random() * 0.5);
@@ -126,6 +143,17 @@ var init = function () {
   // world
 
   var pyramid = new THREE.CylinderGeometry(0, 10, 30, 4, 1);
+  var cube = new THREE.BoxGeometry(10, 10, 10);
+  var torus = new THREE.TorusKnotGeometry(10, 2, 50, 16);
+  var dodecahedron = new THREE.DodecahedronGeometry(10, 0);
+
+  var possibleGeometries = [
+    pyramid,
+    cube,
+    // torus,
+    dodecahedron
+  ];
+
   var flatMaterial = new THREE.MeshPhongMaterial({
     color: 0xffffff,
     specular: 0xffffff,
@@ -134,13 +162,14 @@ var init = function () {
   });
 
   for (var i = 0; i < 500; i++) {
-    var pyramidMesh = new THREE.Mesh(pyramid, flatMaterial);
-    pyramidMesh.position.x = (Math.random() - 0.5) * mapSideLength;
-    pyramidMesh.position.y = (Math.random() - 0.5) * mapSideLength;
-    pyramidMesh.position.z = (Math.random() - 0.5) * mapSideLength;
-    pyramidMesh.updateMatrix();
-    pyramidMesh.matrixAutoUpdate = false;
-    scene.add(pyramidMesh);
+    var geometry = possibleGeometries[parseInt(Math.random() * possibleGeometries.length)];
+    var randomMesh = new THREE.Mesh(geometry, flatMaterial);
+    randomMesh.position.x = (Math.random() - 0.5) * mapSideLength;
+    randomMesh.position.y = (Math.random() - 0.5) * mapSideLength;
+    randomMesh.position.z = (Math.random() - 0.5) * mapSideLength;
+    randomMesh.updateMatrix();
+    randomMesh.matrixAutoUpdate = false;
+    scene.add(randomMesh);
   }
 
   sphereX = new THREE.Mesh(
@@ -175,43 +204,6 @@ var resize = function () {
 var handleMovement = function (dt) {
   sphereX.position.x += dt;
   sphereZ.position.z += dt;
-
-  var xRad = camera.rotation.x;
-  var yRad = camera.rotation.y;
-  // console.log("camera rotation x", xRad, "cos", Math.cos(xRad), "sin", Math.sin(xRad));
-  console.log("camera rotation y", yRad, "cos", Math.cos(yRad), "sin", Math.sin(yRad));
-
-  var d = movementSpeed * dt;
-
-  // TODO: These are wrong.
-  if (pressedKeys[KEYCODES.up]) {
-    camera.position.x -= (Math.sin(yRad) * d) // - (d * 2);
-    controls.target.x -= (Math.sin(yRad) * d) // - (d * 2);
-    camera.position.z -= (Math.cos(yRad) * d) // - (d * 2);
-    controls.target.z -= (Math.cos(yRad) * d) // - (d * 2);
-  }
-
-  if (pressedKeys[KEYCODES.down]) {
-    camera.position.x += (Math.sin(yRad) * d) // - (d * 2);
-    controls.target.x += (Math.sin(yRad) * d) // - (d * 2);
-    camera.position.z += (Math.cos(yRad) * d) // - (d * 2);
-    controls.target.z += (Math.cos(yRad) * d) // - (d * 2);
-  }
-
-  if (pressedKeys[KEYCODES.left]) {
-    camera.position.z += (Math.sin(yRad) * d) // - (d * 2);
-    controls.target.z += (Math.sin(yRad) * d) // - (d * 2);
-    camera.position.x += (Math.cos(yRad) * d) // - (d * 2);
-    controls.target.x += (Math.cos(yRad) * d) // - (d * 2);
-  }
-
-  if (pressedKeys[KEYCODES.right]) {
-    camera.position.z -= (Math.sin(yRad) * d) // - (d * 2);
-    controls.target.z -= (Math.sin(yRad) * d) // - (d * 2);
-    camera.position.x -= (Math.cos(yRad) * d) // - (d * 2);
-    controls.target.x -= (Math.cos(yRad) * d) // - (d * 2);
-  }
-  // console.log("dt", dt);
 }
 
 var update = function (dt) {
